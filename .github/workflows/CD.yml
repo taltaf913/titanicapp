@@ -20,4 +20,4 @@ jobs:
         run: sudo docker pull $DOCKER_USER/titanic-fastapi:latest
 
       - name: run docker image
-        run: sudo docker run -it -d -p 8000:8000 --name=titaniceapi $DOCKER_USER/titanic-fastapi:latest
+        run: sudo docker run -it -d -p 8001:8001 --name=titaniceapi $DOCKER_USER/titanic-fastapi:latest
