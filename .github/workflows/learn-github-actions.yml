@@ -20,7 +20,7 @@ jobs:
       run: pip install -r requirements/requirements.txt
     - name: Train and save pipeline
       run: python titanic_model/train_pipeline.py
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v4
       with:
         name: my-trained-pipeline
         path: titanic_model/trained_models/*.pkl
