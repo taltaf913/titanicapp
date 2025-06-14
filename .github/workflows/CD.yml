@@ -15,7 +15,8 @@ jobs:
           DOCKER_USER: ${{ secrets.DOCKER_USER_NAME }}
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASS_TOKEN }}
         run: docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
-
+      - name: Echo Docker user
+        run: echo "DOCKER_USER is $DOCKER_USER"
       - name: Pull Image from Docker hub
         run: sudo docker pull $DOCKER_USER/titanic-fastapi:latest
 
