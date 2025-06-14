@@ -14,6 +14,8 @@ jobs:
         env:
           DOCKER_USER: ${{ secrets.DOCKER_USER_NAME }}
         run: sudo docker pull $DOCKER_USER/titanic-fastapi:latest
+      - name: Delete Old Docker Container
+        run: sudo docker rm -f titanic-fastapi-container || true
       - name: Run Docker Container
         env:
           DOCKER_USER: ${{ secrets.DOCKER_USER_NAME }}
