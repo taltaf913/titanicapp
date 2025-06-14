@@ -11,6 +11,8 @@ requests>=2.23.0,<2.24.0
 
 # After uploding your package in PyPi use the given below
 #titanic-model==0.0.1
+gradio==3.36.1        # gives a friendly web interface
 
+prometheus-client      # for monitoring purpose
 # If locally copyied whl file inside titanic_model-api then use given below
 titanic_model-0.0.1-py3-none-any.whl
