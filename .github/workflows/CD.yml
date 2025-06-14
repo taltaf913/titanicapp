@@ -1,7 +1,7 @@
 name: PullDockerImage
 on:
   workflow_run:
-    workflows: ["PushDockerImage"]
+    workflows: ["Push a Docker Image"]
     types:
       - completed
 
