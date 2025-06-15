@@ -33,6 +33,18 @@ jobs:
       run: |
         curl --silent --location "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
         sudo mv /tmp/eksctl /usr/local/bin   
+   - name: Create EKS cluster
+      run: |
+        eksctl create cluster \
+          --name=r4cluster \
+          --region=us-east-1 \
+          --version=1.32 \
+          --nodegroup-name=myNodegrp \
+          --node-type=t2.micro \
+          --nodes=1 \
+          --nodes-min=1 \
+          --nodes-max=1 \
+          --managed
 
     # Update kubeconfig for your EKS cluster
     - name: Update kubeconfig
