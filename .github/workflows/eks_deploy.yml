@@ -41,7 +41,6 @@ jobs:
           --name=r4cluster \
           --region=us-east-1 \
           --version=1.32 \
-          --nodegroup-name=myNodegrp \
           --node-type=t2.micro \
           --nodes=1 \
           --nodes-min=1 \
