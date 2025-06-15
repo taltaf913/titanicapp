@@ -28,12 +28,14 @@ jobs:
         curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
         chmod +x ./kubectl
         sudo mv ./kubectl /usr/local/bin/kubectl
-     # Install kubectl
+
+    # Install eksctl
     - name: Install eksctl
       run: |
         curl --silent --location "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
         sudo mv /tmp/eksctl /usr/local/bin   
-   - name: Create EKS cluster
+
+    - name: Create EKS cluster
       run: |
         eksctl create cluster \
           --name=r4cluster \
@@ -56,11 +58,13 @@ jobs:
       run: |
         kubectl apply -f deploy_auto_scale.yaml
         echo kubectl get svc
-# Get the LoadBalancer service URL (instead of echoing the command)
+
+    # Get the LoadBalancer service URL (instead of echoing the command)
     - name: Get Service URL
       run: |
         kubectl get svc my-svc-v3 -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
         echo "Service is available at: $(kubectl get svc my-svc-v3 -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')"
+
     # Optionally check status of the deployment
     - name: Check Deployment Status
       run: kubectl rollout status deployment/myapp-deployment
