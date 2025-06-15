@@ -37,7 +37,7 @@ jobs:
       run: |
         eksctl create cluster \
           --name=r4cluster \
-          --region=ap-south-1 \
+          --region=us-east-1 \
           --version=1.30 \
           --nodegroup-name=myNodegrp \
           --node-type=t2.micro \
