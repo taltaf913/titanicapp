@@ -33,6 +33,8 @@ jobs:
       run: |
         curl --silent --location "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
         sudo mv /tmp/eksctl /usr/local/bin   
+    - name: Delete cluster
+      run: eksctl delete cluster --region=us-east-1 --name=r4cluster
     - name: Create EKS cluster
       run: |
         eksctl create cluster \
