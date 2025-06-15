@@ -50,7 +50,7 @@ jobs:
     # Update kubeconfig for your EKS cluster
     - name: Update kubeconfig
       run: |
-        aws eks update-kubeconfig --name r4cluster --region ap-south-1
+        aws eks update-kubeconfig --name r4cluster --region us-east-1
 
     # Deploy to EKS using kubectl
     - name: Deploy to EKS
