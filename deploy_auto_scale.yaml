@@ -13,7 +13,7 @@ spec:
         app: myapp-pod
     spec:
       containers:
-      - image: ramirk/titanic-fastapi
+      - image: taltaf913/titanic-fastapi:latest
         name: mycontainer
         ports:
         - containerPort: 8001
