@@ -25,7 +25,7 @@ jobs:
     # Install kubectl
     - name: Install kubectl
       run: |
-        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+        curl -LO "kubectl https://amazon-eks.s3-us-west-2.amazonaws.com/1.18.9/2020-11-02/bin/linux/amd64/kubectl"
         chmod +x ./kubectl
         sudo mv ./kubectl /usr/local/bin/kubectl
 
@@ -41,11 +41,9 @@ jobs:
           --name=r4cluster \
           --region=us-east-1 \
           --version=1.32 \
-          --node-type=t2.micro \
-          --nodes=1 \
-          --nodes-min=1 \
-          --nodes-max=1 \
-          --managed
+          --node-type=t2.medium \
+          --nodes=2 \
+          --asg-access
 
     # Update kubeconfig for your EKS cluster
     - name: Update kubeconfig
