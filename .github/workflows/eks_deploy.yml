@@ -71,6 +71,7 @@ jobs:
 
     - name: Add EKS Helm Repo
       run: |
+        kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.2/cert-manager.yaml
         helm repo add eks https://aws.github.io/eks-charts
         helm repo update
 
@@ -81,6 +82,7 @@ jobs:
            --set serviceAccount.create=false \
            --set serviceAccount.name=aws-load-balancer-controller \
            --namespace kube-system
+        kubectl get pods -n kube-system | grep aws-load-balancer
 
     # Deploy to EKS using kubectl
     - name: Deploy to EKS
