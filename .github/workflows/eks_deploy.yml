@@ -43,6 +43,7 @@ jobs:
           --version=1.32 \
           --node-type=t2.medium \
           --nodes=2 \
+          --managed \
           --asg-access
 
     # Update kubeconfig for your EKS cluster
@@ -59,7 +60,7 @@ jobs:
         ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
         echo "ACCOUNT_ID=$ACCOUNT_ID" >> $GITHUB_ENV
         eksctl create iamserviceaccount \
-           --cluster eksspottutorial \
+           --cluster r4cluster \
            --namespace kube-system \
            --name aws-load-balancer-controller \
            --attach-policy-arn arn:aws:iam::${ACCOUNT_ID}:policy/ALBIngressControllerIAMPolicy \
@@ -74,7 +75,7 @@ jobs:
     - name: Install AWS Load Balancer Controller
       run: |
         helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
-           --set clusterName=eksspottutorial \
+           --set clusterName=r4cluster \
            --set serviceAccount.create=false \
            --set serviceAccount.name=aws-load-balancer-controller \
            --namespace kube-system
