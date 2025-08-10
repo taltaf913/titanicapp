@@ -2,7 +2,7 @@ name: CI/CD Pipeline for EKS
 
 on:
   workflow_run:
-    workflows: ["Push a Docker Image"] # This refers to the name of the first workflow
+    workflows: ["Push a Docker Image"]
     types:
       - completed
 
@@ -20,7 +20,7 @@ jobs:
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1 # Specify your region
+        aws-region: us-east-1
 
     # Install kubectl
     - name: Install kubectl
@@ -35,16 +35,29 @@ jobs:
         curl --silent --location "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
         sudo mv /tmp/eksctl /usr/local/bin   
 
-    - name: Create EKS cluster
+    # Check if EKS cluster exists, create if not
+    - name: Check and Create EKS Cluster
+      id: eks_check
       run: |
-        eksctl create cluster \
-          --name=r4cluster \
-          --region=us-east-1 \
-          --version=1.32 \
-          --node-type=t2.medium \
-          --nodes=2 \
-          --managed \
-          --asg-access
+        set -e
+        CLUSTER_NAME="r4cluster"
+        REGION="us-east-1"
+        CLUSTER_EXISTS=$(eksctl get cluster --region $REGION --name $CLUSTER_NAME --output json | grep "\"name\"" || true)
+        if [[ -z "$CLUSTER_EXISTS" ]]; then
+          echo "EKS Cluster $CLUSTER_NAME does not exist. Creating..."
+          eksctl create cluster \
+            --name=$CLUSTER_NAME \
+            --region=$REGION \
+            --version=1.32 \
+            --node-type=t2.medium \
+            --nodes=2 \
+            --managed \
+            --asg-access
+          echo "cluster_created=true" >> $GITHUB_ENV
+        else
+          echo "EKS Cluster $CLUSTER_NAME already exists."
+          echo "cluster_created=false" >> $GITHUB_ENV
+        fi
 
     # Update kubeconfig for your EKS cluster
     - name: Update kubeconfig
@@ -58,7 +71,7 @@ jobs:
         kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
         eksctl utils associate-iam-oidc-provider --region us-east-1 --cluster r4cluster --approve
         curl -Lo iam-policy.json https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/main/docs/install/iam_policy.json
-        aws iam create-policy --policy-name ALBIngressControllerIAMPolicy --policy-document file://iam-policy.json
+        aws iam create-policy --policy-name ALBIngressControllerIAMPolicy --policy-document file://iam-policy.json || true
         ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
         echo "ACCOUNT_ID=$ACCOUNT_ID" >> $GITHUB_ENV
         eksctl create iamserviceaccount \
