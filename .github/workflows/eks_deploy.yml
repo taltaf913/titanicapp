@@ -50,6 +50,8 @@ jobs:
     - name: Update kubeconfig
       run: |
         aws eks update-kubeconfig --name r4cluster --region us-east-1
+        eksctl get cluster
+        kubectl get nodes
         curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
         helm repo add eks https://aws.github.io/eks-charts
         helm repo update
@@ -84,6 +86,9 @@ jobs:
     - name: Deploy to EKS
       run: |
         kubectl apply -f deploy_auto_scale.yaml
+        kubectl get pods
+        kubectl get deployments
+        kubectl expose pod myapp-pod --type=LoadBalancer --name=my-svc-v3
         echo kubectl get svc
 
     # Get the LoadBalancer service URL (instead of echoing the command)
