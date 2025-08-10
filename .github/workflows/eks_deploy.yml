@@ -81,6 +81,11 @@ jobs:
            --attach-policy-arn arn:aws:iam::${ACCOUNT_ID}:policy/ALBIngressControllerIAMPolicy \
            --override-existing-serviceaccounts \
            --approve
+        helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
+          --set clusterName=r4cluster \
+          --set serviceAccount.create=false \
+          --set serviceAccount.name=aws-load-balancer-controller \
+          --namespace kube-system
 
 
     # Deploy to EKS using kubectlj
@@ -94,6 +99,10 @@ jobs:
       run: |
         kubectl get svc my-svc-v3 -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
         echo "Service is available at: $(kubectl get svc my-svc-v3 -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')"
+        kubectl get svc -n ingress-nginx
+        kubectl get svc ingress-nginx-controller -n ingress-nginx -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+        echo "Ingres service is available at: $(kubectl get svc ingress-nginx-controller -n ingress-nginx -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')"
+        kubectl get svc ingress-nginx-controller -n ingress-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
 
     # Optionally check status of the deployment
     - name: Check Deployment Status
