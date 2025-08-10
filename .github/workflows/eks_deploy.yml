@@ -48,7 +48,7 @@ jobs:
           eksctl create cluster \
             --name=$CLUSTER_NAME \
             --region=$REGION \
-            --version=1.27 \
+            --version=1.32 \
             --node-type=t2.medium \
             --nodes=2 \
             --managed \
