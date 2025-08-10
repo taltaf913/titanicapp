@@ -35,7 +35,8 @@ kind: Ingress
 metadata:
   name: myapp-ingress
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
+   kubernetes.io/ingress.class: alb
+   alb.ingress.kubernetes.io/scheme: internet-facing
 spec:
   rules:
   - http:
