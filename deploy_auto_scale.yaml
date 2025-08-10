@@ -28,4 +28,4 @@ spec:
     targetPort: 8001
   selector:
     app: myapp-pod
-  type: LoadBalancer
+  type: ClusterIP
