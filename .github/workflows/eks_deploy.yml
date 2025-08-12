@@ -1,4 +1,4 @@
-name: CI/CD Pipeline for EKS
+name: CI/CD Pipeline for EKSs
 
 on:
   workflow_run:
