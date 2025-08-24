@@ -7,113 +7,34 @@ on:
       - completed
 
 jobs:
-  deploy-to-aks:
+  build-and-deploy:
     runs-on: ubuntu-latest
-    env:
-      # Recommended: set these as repository secrets (see notes below).
-      AZURE_RESOURCE_GROUP: ${{ secrets.AZURE_RESOURCE_GROUP }}
-      AKS_CLUSTER_NAME: ${{ secrets.AKS_CLUSTER_NAME }}
-      AZURE_LOCATION: eastus
 
     steps:
-    - name: Checkout code
+    - name: Checkout Code
       uses: actions/checkout@v4
 
-    # Login to Azure. Set AZURE_CREDENTIALS as a secret containing the JSON from:
-    #   az ad sp create-for-rbac --sdk-auth --role Contributor --scopes /subscriptions/<id>
-    - name: Azure Login
-      uses: azure/login@v1
+    - name: Log in to Azure
+      uses: azure/login@v2
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    # Ensure required vars are set
-    - name: Validate inputs
+    - name: Set up kubectl
+      uses: azure/setup-kubectl@v4
+
+    - name: Set Kubeconfig
       run: |
-        set -e
-        if [ -z "${{ env.AZURE_RESOURCE_GROUP }}" ]; then
-          echo "AZURE_RESOURCE_GROUP is not set. Please add it to repository secrets."
-          exit 1
-        fi
-        if [ -z "${{ env.AKS_CLUSTER_NAME }}" ]; then
-          echo "AKS_CLUSTER_NAME is not set. Please add it to repository secrets."
-          exit 1
-        fi
-        echo "Using resource group: $AZURE_RESOURCE_GROUP and cluster: $AKS_CLUSTER_NAME"
+        echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > kubeconfig
+        export KUBECONFIG=kubeconfig
 
-    # Install Azure CLI (already available on hosted runners but this ensures recent version)
-    - name: Install/update azure CLI
-      uses: azure/cli@v1
-
-    # Check if AKS cluster exists; create if not
-    - name: Check and Create AKS Cluster
-      id: aks_check
+      # Deploy to EKS using kubectlj
+    - name: Deploy to EKS
       run: |
-        set -e
-        RG="$AZURE_RESOURCE_GROUP"
-        CLUSTER_NAME="$AKS_CLUSTER_NAME"
-        LOCATION="${AZURE_LOCATION:-eastus}"
-        echo "Checking AKS cluster $CLUSTER_NAME in resource group $RG..."
-        if az aks show --resource-group "$RG" --name "$CLUSTER_NAME" >/dev/null 2>&1; then
-          echo "AKS cluster $CLUSTER_NAME already exists."
-          echo "cluster_created=false" >> $GITHUB_ENV
-        else
-          echo "AKS cluster $CLUSTER_NAME does not exist. Creating..."
-          az group create --name "$RG" --location "$LOCATION"
-          az aks create \
-            --resource-group "$RG" \
-            --name "$CLUSTER_NAME" \
-            --node-count 2 \
-            --kubernetes-version "1.26.9" \
-            --enable-managed-identity \
-            --enable-addons monitoring \
-            --generate-ssh-keys \
-            --location "$LOCATION"
-          echo "cluster_created=true" >> $GITHUB_ENV
-        fi
-
-    # Get kubeconfig for AKS
-    - name: Get AKS credentials
-      run: |
-        set -e
-        az aks get-credentials --resource-group "$AZURE_RESOURCE_GROUP" --name "$AKS_CLUSTER_NAME" --overwrite-existing
-        kubectl version --client
-        kubectl get nodes || true
-
-    # Install kubectl (ensures the runner has the kubectl matching cluster)
-    - name: Setup kubectl
-      uses: azure/setup-kubectl@v3
-      with:
-        version: '1.26.9'
-
-    # Deploy manifests to AKS
-    - name: Deploy to AKS
-      run: |
-        # Adjust manifest path/filenames if different in your repo
         kubectl apply -f deploy_auto_scale.yaml
-        kubectl rollout status deployment/myapp-deployment --timeout=3m || true
-
-    # Get the LoadBalancer service address (IP or hostname)
+        echo kubectl get svc
     - name: Get Service URL
       run: |
-        # Wait up to 5 minutes for external IP to appear
-        SERVICE_NAME="my-svc-v3"
-        NAMESPACE="${SERVICE_NAMESPACE:-default}"
-        echo "Waiting for external IP for service $SERVICE_NAME in namespace $NAMESPACE..."
-        for i in $(seq 1 30); do
-          IP=$(kubectl get svc "$SERVICE_NAME" -n "$NAMESPACE" -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || true)
-          HOST=$(kubectl get svc "$SERVICE_NAME" -n "$NAMESPACE" -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || true)
-          if [ -n "$IP" ] || [ -n "$HOST" ]; then
-            echo "Service is available at: ${IP:-$HOST}"
-            break
-          fi
-          echo "Waiting for external IP/hostname... ($i/30)"
-          sleep 10
-        done
-        echo "Ingress / nginx services (if present):"
-        kubectl get svc -A | sed -n '1,200p' || true
+        kubectl get svc my-svc-v3 -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+        echo "Service is available at: $(kubectl get svc my-svc-v3 -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')"
+        kubectl get svc my-svc-v3 -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
 
-    # Optionally check status of the deployment again
-    - name: Final Deployment Check
-      run: |
-        kubectl get deployments -A
-        kubectl get pods -A
