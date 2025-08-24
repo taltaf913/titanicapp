@@ -28,7 +28,7 @@ spec:
     targetPort: 8001
   selector:
     app: myapp-pod
-  type: ClusterIP
+  type: LoadBalancer
 ---
 apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler
