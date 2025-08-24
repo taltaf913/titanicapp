@@ -27,7 +27,7 @@ jobs:
         echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > kubeconfig
         export KUBECONFIG=kubeconfig
 
-      # Deploy to EKS using kubectlj
+      # Deploy to EKS using kubectl
     - name: Deploy to EKS
       run: |
         kubectl apply -f deploy_auto_scale.yaml
