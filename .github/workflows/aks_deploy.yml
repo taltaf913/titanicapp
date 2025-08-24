@@ -36,7 +36,7 @@ jobs:
     - name: Get Service URL
       run: |
         kubectl get svc my-svc-v3 -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
-        kubectl create namespace argocd
+        kubectl create namespace argocd || true
         kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
         kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
         sudo apt install jq -y
