@@ -14,7 +14,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    # Configure AWS credentials using GitHub Secrets
+    # Configure AWS credentials using GitHub Secretsd
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v3
       with:
